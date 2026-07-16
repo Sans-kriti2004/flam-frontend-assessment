@@ -4,6 +4,10 @@ An interactive, premium, and highly pedagogical AI-powered Study Assistant. User
 
 Built as part of the **Software Engineering / Frontend Intern Assignment** for **Flam**.
 
+### 🔗 Project Links
+* 🎥 **[Working Model Demo Video](https://drive.google.com/file/d/18HPQIKkmq9xaJdFg0KNrjZgKpgTOj3gP/view?usp=sharing)**
+* 🌐 **[Live Deployed URL](https://flam-frontend-assessment-xt9c.onrender.com/)**
+
 ---
 
 ## 🚀 Quick Start & Setup
