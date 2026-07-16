@@ -94,42 +94,66 @@ async function callGemini(promptText) {
     throw new Error('GEMINI_API_KEY environment variable is not configured. Please add your key to the .env file.');
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{
-          text: promptText
-        }]
-      }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: STUDY_MATERIAL_SCHEMA,
-        temperature: 0.2 // Lower temperature for more consistent structural adherence
+  // Fallback models list in order of preference
+  const models = ['gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+  let lastError = null;
+
+  for (const model of models) {
+    try {
+      console.log(`[API Call] Attempting generation with model: ${model}`);
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: promptText
+            }]
+          }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: STUDY_MATERIAL_SCHEMA,
+            temperature: 0.2
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`[API Warning] Model ${model} failed with status ${response.status}: ${errorText}`);
+        
+        let errorJson = {};
+        try { errorJson = JSON.parse(errorText); } catch {}
+        lastError = new Error(errorJson.error?.message || errorText || `Status ${response.status}`);
+        continue; // Try next model
       }
-    })
-  });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Gemini API Error Response:', errorText);
-    throw new Error(`Gemini API returned status ${response.status}: ${errorText || 'Unknown error'}`);
+      const result = await response.json();
+      
+      try {
+        const textOutput = result.candidates[0].content.parts[0].text;
+        const parsedData = JSON.parse(textOutput);
+        console.log(`[API Success] Successfully generated content using model: ${model}`);
+        return parsedData;
+      } catch (err) {
+        console.error(`[API Error] Failed to parse response text for model ${model}:`, err);
+        lastError = new Error(`Failed to parse AI output from model ${model}.`);
+        continue; // Try next model
+      }
+
+    } catch (err) {
+      console.error(`[API Error] Network/System error for model ${model}:`, err.message);
+      lastError = err;
+      continue; // Try next model
+    }
   }
 
-  const result = await response.json();
-  
-  try {
-    const textOutput = result.candidates[0].content.parts[0].text;
-    return JSON.parse(textOutput);
-  } catch (err) {
-    console.error('Failed to parse Gemini output:', err, result);
-    throw new Error('The AI model returned invalid or malformed content. Please try again.');
-  }
+  // If we reach here, all models in the fallback loop failed
+  throw new Error(`Gemini API Error: ${lastError?.message || 'All attempted models failed to generate content.'}`);
 }
 
 // Route: Generate study material
