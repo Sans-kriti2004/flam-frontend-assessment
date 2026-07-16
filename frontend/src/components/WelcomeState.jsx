@@ -1,5 +1,19 @@
-import React, { useState } from 'react';
-import { Sparkles, FileText, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, FileText, AlertCircle, Quote } from 'lucide-react';
+
+const GREETINGS = [
+  "Hello! Let's study together! 📖✨",
+  "What's on your mind today? 💡 Let's map it out.",
+  "Ready to master something new? 🚀",
+  "Hey there, study buddy! 👋 Let's forge some notes."
+];
+
+const MOTIVATIONS = [
+  "Consistency beats cramming. Breaking topics down makes them 10x easier to learn!",
+  "Flipping flashcards at least twice doubles active recall and long-term memory retention. 🧠",
+  "Try the Pomodoro technique: study for 25 minutes, then take a 5-minute coffee break! ☕",
+  "Explain a concept to someone else (or your study assistant!) to verify if you truly understand it."
+];
 
 const SUGGESTIONS = [
   {
@@ -22,6 +36,16 @@ const SUGGESTIONS = [
 export default function WelcomeState({ onSubmit, isLoading }) {
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
+  const [greeting, setGreeting] = useState('');
+  const [tip, setTip] = useState('');
+
+  useEffect(() => {
+    // Pick a random greeting and tip on mount
+    const randomGreeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    const randomTip = MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
+    setGreeting(randomGreeting);
+    setTip(randomTip);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,7 +65,7 @@ export default function WelcomeState({ onSubmit, isLoading }) {
   return (
     <div className="welcome-container animate-fade-in">
       <div className="welcome-header">
-        <h2 className="welcome-title">What are we studying today?</h2>
+        <h2 className="welcome-title">{greeting}</h2>
         <p className="welcome-subtitle">
           Paste your lecture notes, textbook chapters, or simply type a topic. We'll forge interactive roadmaps, flashcards, and quizzes instantly.
         </p>
@@ -71,6 +95,24 @@ export default function WelcomeState({ onSubmit, isLoading }) {
                 <AlertCircle size={16} style={{ color: 'var(--error)' }} />
                 <span style={{ fontSize: '0.85rem' }}>{error}</span>
               </div>
+            </div>
+          )}
+
+          {/* Duolingo style study buddy tip widget */}
+          {tip && (
+            <div style={{
+              background: 'rgba(99, 102, 241, 0.05)',
+              border: '1px solid rgba(99, 102, 241, 0.08)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              display: 'flex',
+              gap: '12px',
+              alignItems: 'center'
+            }}>
+              <Quote size={20} style={{ color: 'var(--accent-secondary)', flexShrink: 0, opacity: 0.6 }} />
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4', fontStyle: 'italic' }}>
+                <strong>Study Tip:</strong> {tip}
+              </p>
             </div>
           )}
 

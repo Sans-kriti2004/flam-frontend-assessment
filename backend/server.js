@@ -84,23 +84,58 @@ const STUDY_MATERIAL_SCHEMA = {
 
 // Route: Status check
 app.get('/api/status', (req, res) => {
-  res.json({ status: 'ok', apiConfigured: !!process.env.GEMINI_API_KEY });
+  res.json({ 
+    status: 'ok', 
+    apiConfigured: !!(process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY),
+    provider: process.env.OPENROUTER_API_KEY ? 'OpenRouter' : 'Gemini'
+  });
 });
+
+// Helper: Call OpenRouter API
+async function callOpenRouter(promptText) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const modelName = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash:free";
+
+  console.log(`[API Call] Querying OpenRouter using model: ${modelName}`);
+
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'StudyForge AI'
+    },
+    body: JSON.stringify({
+      model: modelName,
+      messages: [{
+        role: "user",
+        content: promptText + "\n\nIMPORTANT: Your response MUST be a single, valid JSON object matching the schema. Do not wrap in markdown ```json blocks."
+      }],
+      response_format: { type: "json_object" },
+      temperature: 0.2
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenRouter API status ${response.status}: ${errorText}`);
+  }
+
+  const result = await response.json();
+  const textOutput = result.choices[0].message.content;
+  return JSON.parse(textOutput);
+}
 
 // Helper: Call Gemini API
 async function callGemini(promptText) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY environment variable is not configured. Please add your key to the .env file.');
-  }
-
-  // Fallback models list in order of preference
   const models = ['gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
   let lastError = null;
 
   for (const model of models) {
     try {
-      console.log(`[API Call] Attempting generation with model: ${model}`);
+      console.log(`[API Call] Attempting Gemini generation with model: ${model}`);
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       
       const response = await fetch(url, {
@@ -129,31 +164,47 @@ async function callGemini(promptText) {
         let errorJson = {};
         try { errorJson = JSON.parse(errorText); } catch {}
         lastError = new Error(errorJson.error?.message || errorText || `Status ${response.status}`);
-        continue; // Try next model
+        continue;
       }
 
       const result = await response.json();
       
       try {
         const textOutput = result.candidates[0].content.parts[0].text;
-        const parsedData = JSON.parse(textOutput);
-        console.log(`[API Success] Successfully generated content using model: ${model}`);
-        return parsedData;
+        return JSON.parse(textOutput);
       } catch (err) {
         console.error(`[API Error] Failed to parse response text for model ${model}:`, err);
         lastError = new Error(`Failed to parse AI output from model ${model}.`);
-        continue; // Try next model
+        continue;
       }
 
     } catch (err) {
       console.error(`[API Error] Network/System error for model ${model}:`, err.message);
       lastError = err;
-      continue; // Try next model
+      continue;
     }
   }
 
-  // If we reach here, all models in the fallback loop failed
   throw new Error(`Gemini API Error: ${lastError?.message || 'All attempted models failed to generate content.'}`);
+}
+
+// Main Dispatcher: Decides between OpenRouter and Gemini
+async function getStudyMaterials(promptText) {
+  if (process.env.OPENROUTER_API_KEY) {
+    try {
+      return await callOpenRouter(promptText);
+    } catch (err) {
+      console.warn("[API Warning] OpenRouter failed, attempting Gemini fallback...", err.message);
+      if (process.env.GEMINI_API_KEY) {
+        return await callGemini(promptText);
+      }
+      throw err;
+    }
+  } else if (process.env.GEMINI_API_KEY) {
+    return await callGemini(promptText);
+  } else {
+    throw new Error('No API keys configured. Please add GEMINI_API_KEY or OPENROUTER_API_KEY to your .env file.');
+  }
 }
 
 // Route: Generate study material
@@ -184,7 +235,7 @@ Instructions:
 6. The entire output MUST be in valid JSON conforming to the requested schema. Do not include markdown wraps or anything outside the JSON structure.
 `;
 
-    const studyData = await callGemini(promptText);
+    const studyData = await getStudyMaterials(promptText);
     res.json(studyData);
 
   } catch (error) {
@@ -225,7 +276,7 @@ Your instructions are:
 5. Ensure the final response strictly matches the JSON schema structure. Do not output anything other than the JSON object.
 `;
 
-    const refinedData = await callGemini(promptText);
+    const refinedData = await getStudyMaterials(promptText);
     res.json(refinedData);
 
   } catch (error) {

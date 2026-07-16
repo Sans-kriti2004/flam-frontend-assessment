@@ -189,7 +189,7 @@ export default function App() {
             marginBottom: '24px'
           }}>
             <span style={{ fontSize: '0.85rem' }}>
-              🔑 Make sure to configure your <strong>GEMINI_API_KEY</strong> in the root <code>.env</code> file before launching.
+              🔑 Make sure to configure your <strong>GEMINI_API_KEY</strong> or <strong>OPENROUTER_API_KEY</strong> in the root <code>.env</code> file before launching.
             </span>
           </div>
         )}
