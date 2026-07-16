@@ -10,14 +10,14 @@ import { api } from './utils/api';
 import { AlertCircle, ArrowLeft, RefreshCw, Send, Sparkles } from 'lucide-react';
 
 export default function App() {
-  // Theme state
+  // Theme state - defaults to Light theme for the cute pastel look
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   
   // App States
-  const [studyData, setStudyData] = useState(null); // The active study JSON
+  const [studyData, setStudyData] = useState(null); 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [cachedNotes, setCachedNotes] = useState(''); // Stores input text for retry capability
+  const [cachedNotes, setCachedNotes] = useState(''); 
   const [activeTab, setActiveTab] = useState('roadmap'); // Tabs: 'roadmap', 'flashcards', 'quiz'
   
   // Session History State
@@ -167,7 +167,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col pb-12">
+    <div className="app-container">
       {/* Top Header */}
       <Header 
         theme={theme} 
@@ -177,11 +177,18 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-grow flex flex-col items-center justify-center py-4 px-4 w-full">
+      <main className="main-content">
+        
         {/* API key check banner */}
-        {!sessions.length && !studyData && !isLoading && (
-          <div className="w-full max-w-3xl mb-4 glass-panel p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm" style={{ borderLeft: '4px solid var(--accent-primary)' }}>
-            <span className="text-secondary" style={{ color: 'var(--text-secondary)' }}>
+        {!sessions.length && !studyData && !isLoading && !error && (
+          <div className="glass-panel alert-box alert-success" style={{
+            maxWidth: '720px',
+            borderLeft: '4px solid var(--accent-primary)',
+            background: 'var(--glass-bg)',
+            color: 'var(--text-secondary)',
+            marginBottom: '24px'
+          }}>
+            <span style={{ fontSize: '0.85rem' }}>
               🔑 Make sure to configure your <strong>GEMINI_API_KEY</strong> in the root <code>.env</code> file before launching.
             </span>
           </div>
@@ -189,20 +196,20 @@ export default function App() {
 
         {/* Global Error Banner */}
         {error && (
-          <div className="w-full max-w-2xl alert-box alert-error flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <AlertCircle size={20} className="text-red-400 flex-shrink-0" style={{ color: 'var(--error)' }} />
+          <div className="alert-box alert-error animate-fade-in">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <AlertCircle size={20} style={{ color: 'var(--error)', flexShrink: 0 }} />
               <div>
-                <p className="font-semibold text-sm">Operation Failed</p>
-                <p className="text-xs text-secondary mt-0.5" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+                <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>Operation Failed</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>{error}</p>
               </div>
             </div>
-            <div className="flex gap-2 w-full md:w-auto">
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
               {cachedNotes && (
                 <button 
                   onClick={() => handleGenerate(cachedNotes)}
-                  className="btn btn-secondary flex-1 md:flex-none text-xs py-1.5 px-3 flex items-center gap-1"
-                  style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px' }}
                 >
                   <RefreshCw size={12} />
                   Retry
@@ -210,8 +217,8 @@ export default function App() {
               )}
               <button 
                 onClick={handleGoBack}
-                className="btn btn-secondary flex-1 md:flex-none text-xs py-1.5 px-3 flex items-center gap-1"
-                style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px' }}
               >
                 <ArrowLeft size={12} />
                 Back
@@ -232,26 +239,26 @@ export default function App() {
 
         {/* 3. Study Materials Dashboard */}
         {!isLoading && studyData && (
-          <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 px-2 md:px-4 animate-fade-in">
+          <div className="dashboard-container animate-fade-in">
             
             {/* Dashboard Header Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4" style={{ borderColor: 'var(--glass-border)' }}>
+            <div className="dashboard-header">
               <div>
                 <button 
                   onClick={handleGoBack}
-                  className="btn btn-secondary text-xs py-1.5 px-3 mb-2 flex items-center gap-1"
-                  style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px', marginBottom: '8px' }}
                 >
                   <ArrowLeft size={12} />
                   Back to Editor
                 </button>
-                <h2 className="text-2xl font-bold text-white leading-tight" style={{ color: 'var(--text-primary)' }}>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   Topic: {studyData.topic}
                 </h2>
               </div>
 
               {/* View Selector Tabs */}
-              <div className="tab-list w-full md:w-auto min-w-[280px]">
+              <div className="tab-list">
                 <button 
                   onClick={() => setActiveTab('roadmap')}
                   className={`tab-btn ${activeTab === 'roadmap' ? 'active' : ''}`}
@@ -274,7 +281,7 @@ export default function App() {
             </div>
 
             {/* Dashboard Content */}
-            <div className="min-h-[350px]">
+            <div style={{ minHeight: '300px', width: '100%' }}>
               {activeTab === 'roadmap' && (
                 <RoadmapViewer roadmap={studyData.roadmap} summary={studyData.summary} />
               )}
@@ -286,42 +293,37 @@ export default function App() {
               )}
             </div>
 
-            {/* Refinement Prompt Bar (Refinement Loop) */}
-            <div className="glass-panel p-5 mt-4" style={{ borderColor: 'var(--glass-border-focus)' }}>
-              <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
-                <Sparkles size={14} className="text-purple-400" style={{ color: 'var(--accent-primary)' }} />
+            {/* Refinement Prompt Bar */}
+            <div className="glass-panel refine-card">
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} style={{ color: 'var(--accent-primary)' }} />
                 Refine Study Materials
               </h4>
-              <p className="text-xs text-secondary mb-3" style={{ color: 'var(--text-secondary)' }}>
-                Instruct the AI to customize the generated quiz or flashcards (e.g. "make questions harder", "add more code examples", or "simplify details").
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Customize the generated quiz or flashcards (e.g. "make quiz harder", "add more code examples", or "simplify card concepts").
               </p>
 
-              <form onSubmit={handleRefine} className="flex gap-2">
+              <form onSubmit={handleRefine} className="refine-form">
                 <input 
                   type="text"
                   value={refineInput}
                   onChange={(e) => setRefineInput(e.target.value)}
                   placeholder="Ask the assistant to modify this study session..."
-                  className="flex-grow bg-black/25 text-white border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 transition-all"
-                  style={{
-                    background: 'rgba(0, 0, 0, 0.2)',
-                    borderColor: 'var(--glass-border)',
-                    color: 'var(--text-primary)'
-                  }}
+                  className="refine-input"
                   disabled={isRefining}
                 />
                 <button
                   type="submit"
                   disabled={isRefining || !refineInput.trim()}
-                  className="btn btn-primary px-5 py-2.5 text-sm"
-                  style={{ background: 'var(--accent-gradient)' }}
+                  className="btn btn-primary"
+                  style={{ padding: '8px 16px' }}
                 >
                   {isRefining ? (
                     <RefreshCw size={16} className="animate-spin" />
                   ) : (
                     <>
                       <Send size={14} />
-                      <span className="hidden sm:inline">Refine</span>
+                      <span>Refine</span>
                     </>
                   )}
                 </button>

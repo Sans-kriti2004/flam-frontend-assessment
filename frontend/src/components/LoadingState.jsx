@@ -17,63 +17,78 @@ export default function LoadingState({ onCancel }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
-    }, 2800);
+    }, 2500);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 py-12 text-center animate-fade-in">
-      <div className="glass-panel p-8 flex flex-col items-center gap-6 relative overflow-hidden">
-        {/* Animated Background Pulse */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-purple-600/10 to-cyan-500/10 animate-pulse pointer-events-none" />
-        
+    <div className="loader-container animate-fade-in">
+      <div className="glass-panel loader-card">
         {/* Spinner Icon */}
-        <div className="relative flex items-center justify-center w-20 h-20">
-          <div className="absolute inset-0 border-4 border-purple-500/20 rounded-full" />
-          <div className="absolute inset-0 border-4 border-t-purple-500 border-r-cyan-400 rounded-full animate-spin" />
-          <Sparkles className="text-purple-400 animate-pulse" size={30} style={{ color: 'var(--accent-primary)' }} />
+        <div className="spinner-wrapper">
+          <div className="spinner-outer" />
+          <div className="spinner-inner" />
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--accent-primary)'
+          }}>
+            <Sparkles size={26} className="animate-pulse" />
+          </div>
         </div>
 
         <div>
-          <h3 className="text-xl font-bold mb-2">Forging Study Materials</h3>
-          <p className="text-sm text-secondary" style={{ color: 'var(--text-secondary)' }}>
-            This might take a moment. The AI is crafting structured, interactive resources.
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '6px' }}>Forging Study Materials</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            This might take a moment. The AI is crafting structured resources.
           </p>
         </div>
 
         {/* Step-by-Step Progress Indicators */}
-        <div className="w-full mt-4 flex flex-col gap-3 text-left">
+        <div className="progress-list">
           {LOADING_STEPS.map((step, idx) => {
             const isCompleted = idx < currentStep;
             const isActive = idx === currentStep;
+            
+            let dotStyle = {
+              borderColor: 'var(--glass-border)',
+              color: 'var(--text-muted)'
+            };
+            if (isCompleted) {
+              dotStyle = {
+                borderColor: 'var(--success)',
+                backgroundColor: 'var(--success-bg)',
+                color: 'var(--success)'
+              };
+            } else if (isActive) {
+              dotStyle = {
+                borderColor: 'var(--accent-primary)',
+                backgroundColor: 'rgba(99,102,241,0.1)',
+                color: 'var(--accent-primary)',
+                boxShadow: '0 0 8px rgba(99,102,241,0.2)'
+              };
+            }
+
             return (
               <div 
                 key={idx} 
-                className="flex items-center gap-3 transition-opacity duration-300"
+                className="progress-item"
                 style={{ 
-                  opacity: isActive ? 1 : isCompleted ? 0.6 : 0.25 
+                  opacity: isActive ? 1 : isCompleted ? 0.75 : 0.35,
+                  transition: 'opacity 0.3s ease'
                 }}
               >
-                <div 
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                    isCompleted 
-                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' 
-                      : isActive 
-                        ? 'bg-purple-500/20 border-purple-500 text-purple-400 animate-pulse' 
-                        : 'border-gray-700 text-gray-500'
-                  }`}
-                  style={{
-                    borderColor: isCompleted ? 'var(--success)' : isActive ? 'var(--accent-primary)' : 'var(--glass-border)',
-                    color: isCompleted ? 'var(--success)' : isActive ? 'var(--accent-primary)' : 'var(--text-muted)'
-                  }}
-                >
+                <div className="progress-dot" style={dotStyle}>
                   {isCompleted ? '✓' : idx + 1}
                 </div>
-                <span 
-                  className={`text-sm ${isActive ? 'font-medium text-white' : 'text-secondary'}`}
-                  style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-                >
+                <span style={{ 
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)'
+                }}>
                   {step}
                 </span>
               </div>
@@ -81,11 +96,15 @@ export default function LoadingState({ onCancel }) {
           })}
         </div>
 
-        {/* Abort button */}
+        {/* Cancel button */}
         <button
           onClick={onCancel}
-          className="btn btn-secondary w-full mt-4 flex items-center justify-center gap-2 border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40"
-          style={{ borderColor: 'rgba(239, 68, 68, 0.2)', color: 'var(--error)' }}
+          className="btn btn-secondary"
+          style={{ 
+            width: '100%', 
+            borderColor: 'rgba(244, 63, 94, 0.2)', 
+            color: 'var(--error)' 
+          }}
         >
           <X size={16} />
           Cancel Generation
