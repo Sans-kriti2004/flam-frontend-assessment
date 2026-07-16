@@ -40,6 +40,12 @@ npm start
 
 ---
 
+## 🌐 Live Deployment
+This application is fully deployed and live on **Render** (monorepo setup serving static assets via Express):
+* 🔗 **Live Deployment Link:** [https://flam-frontend-assessment-xt9c.onrender.com/](https://flam-frontend-assessment-xt9c.onrender.com/)
+
+---
+
 ## 🎨 Architectural Design & Logic Breakdown
 
 This project was built to show a high standard of software engineering maturity. Here is a breakdown of the core systems so that the code is easy to explain during the interview:
