@@ -42,9 +42,21 @@ const STUDY_MATERIAL_SCHEMA = {
           id: { type: "STRING", description: "Unique identifier, e.g., rm-1" },
           title: { type: "STRING", description: "Title of the learning step" },
           description: { type: "STRING", description: "Short description of what to learn or do in this phase" },
-          content: { type: "STRING", description: "Detailed, comprehensive educational study notes, key terms, definitions, or code examples explaining this learning phase. If the user only enters a topic, this content serves as the main learning material for this step (1-2 detailed paragraphs)." }
+          content: { type: "STRING", description: "Detailed, comprehensive educational study notes, key terms, definitions, or code examples explaining this learning phase. If the user only enters a topic, this content serves as the main learning material for this step (1-2 detailed paragraphs)." },
+          resources: {
+            type: "ARRAY",
+            description: "1 to 2 authoritative external documentation or learning links (e.g., MDN, Wikipedia, official docs) for further reading",
+            items: {
+              type: "OBJECT",
+              properties: {
+                label: { type: "STRING", description: "Clear anchor text, e.g., 'MDN Web Docs - React Hooks'" },
+                url: { type: "STRING", description: "The full absolute URL, e.g., 'https://developer.mozilla.org/'" }
+              },
+              required: ["label", "url"]
+            }
+          }
         },
-        required: ["id", "title", "description", "content"]
+        required: ["id", "title", "description", "content", "resources"]
       }
     },
     flashcards: {

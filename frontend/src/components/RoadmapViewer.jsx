@@ -186,6 +186,47 @@ export default function RoadmapViewer({ roadmap = [], summary = '' }) {
                         <p key={pIdx} style={{ margin: 0 }}>{para}</p>
                       ))}
                     </div>
+
+                    {/* Reference links */}
+                    {step.resources && step.resources.length > 0 && (
+                      <div style={{ 
+                        marginTop: '16px', 
+                        paddingTop: '12px', 
+                        borderTop: '1px dashed var(--glass-border)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}>
+                        <h6 style={{ 
+                          fontSize: '0.75rem', 
+                          fontWeight: 700, 
+                          color: 'var(--accent-secondary)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}>
+                          🔗 Recommended Sources & Reading
+                        </h6>
+                        <ul style={{ listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {step.resources.map((res, rIdx) => (
+                            <li key={rIdx} style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>•</span>
+                              <a 
+                                href={res.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{ 
+                                  color: 'var(--accent-primary)', 
+                                  textDecoration: 'underline',
+                                  fontWeight: 600
+                                }}
+                              >
+                                {res.label}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
