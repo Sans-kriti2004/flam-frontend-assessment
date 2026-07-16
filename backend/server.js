@@ -298,6 +298,20 @@ Your instructions are:
   }
 });
 
+// Serve static built frontend files in production
+const frontendDistPath = path.join(__dirname, '..', 'frontend', 'dist');
+if (fs.existsSync(frontendDistPath)) {
+  console.log(`[Production] Serving static files from: ${frontendDistPath}`);
+  app.use(express.static(frontendDistPath));
+  
+  // Catch-all route to serve React's index.html for SPA routing
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+} else {
+  console.log(`[Development] Static files path not found: ${frontendDistPath}`);
+}
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`✅ Backend server running on http://localhost:${PORT}`);

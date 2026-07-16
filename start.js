@@ -40,21 +40,40 @@ function runCommand(command, args, cwd, prefix, colorCode) {
   return processName;
 }
 
-// Start backend (Express on port 3001)
+// Check if running in production (e.g., on Render)
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 const backendDir = path.join(__dirname, 'backend');
-const backend = runCommand('node', ['server.js'], backendDir, 'Backend', '36'); // Cyan
 
-// Start frontend (Vite dev server)
-const frontendDir = path.join(__dirname, 'frontend');
-const frontend = runCommand('npm', ['run', 'dev'], frontendDir, 'Frontend', '35'); // Magenta
+if (isProduction) {
+  console.log('🚀 Running in Production Mode (Serving Static Frontend)...');
+  // Start backend only
+  const backend = runCommand('node', ['server.js'], backendDir, 'Backend', '36'); // Cyan
 
-// Handle termination signals
-const cleanup = () => {
-  console.log('\n🛑 Stopping processes...');
-  backend.kill();
-  frontend.kill();
-  process.exit();
-};
+  const cleanup = () => {
+    console.log('\n🛑 Stopping backend process...');
+    backend.kill();
+    process.exit();
+  };
 
-process.on('SIGINT', cleanup);
-process.on('SIGTERM', cleanup);
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+} else {
+  console.log('🚀 Starting AI Study Assistant in Development Mode...');
+  // Start backend (Express on port 3001)
+  const backend = runCommand('node', ['server.js'], backendDir, 'Backend', '36'); // Cyan
+
+  // Start frontend (Vite dev server)
+  const frontendDir = path.join(__dirname, 'frontend');
+  const frontend = runCommand('npm', ['run', 'dev'], frontendDir, 'Frontend', '35'); // Magenta
+
+  // Handle termination signals
+  const cleanup = () => {
+    console.log('\n🛑 Stopping processes...');
+    backend.kill();
+    frontend.kill();
+    process.exit();
+  };
+
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+}
