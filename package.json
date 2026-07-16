@@ -1,0 +1,12 @@
+{
+  "name": "study-assistant-root",
+  "version": "1.0.0",
+  "description": "AI-powered Study Assistant Project",
+  "main": "start.js",
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "start": "node start.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
