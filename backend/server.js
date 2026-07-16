@@ -41,9 +41,10 @@ const STUDY_MATERIAL_SCHEMA = {
         properties: {
           id: { type: "STRING", description: "Unique identifier, e.g., rm-1" },
           title: { type: "STRING", description: "Title of the learning step" },
-          description: { type: "STRING", description: "Short description of what to learn or do in this phase" }
+          description: { type: "STRING", description: "Short description of what to learn or do in this phase" },
+          content: { type: "STRING", description: "Detailed, comprehensive educational study notes, key terms, definitions, or code examples explaining this learning phase. If the user only enters a topic, this content serves as the main learning material for this step (1-2 detailed paragraphs)." }
         },
-        required: ["id", "title", "description"]
+        required: ["id", "title", "description", "content"]
       }
     },
     flashcards: {
