@@ -95,7 +95,7 @@ async function callGemini(promptText) {
   }
 
   // Fallback models list in order of preference
-  const models = ['gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+  const models = ['gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
   let lastError = null;
 
   for (const model of models) {
